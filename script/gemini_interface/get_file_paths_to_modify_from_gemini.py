@@ -28,18 +28,9 @@ async def get_files_to_modify_from_gemini(
     )
 
     if response:
-        try:
-            parsed_response = json.loads(response)
-            return parsed_response
-
-        except json.JSONDecodeError as e:
-            # response is not valid json
-            # migh contain ```json, remove and retry.
-            print("error occured on first parse, retrying..", e.msg)
-            sanitized_res: str = remove_json_markdown(response)
-
-            # now parse it, if throw errror, let it propagate.
-            parsed_res = json.loads(sanitized_res)
-            return parsed_res
+        if response.startswith(("```json", "```")):
+            response = remove_json_markdown(response)
+        parsed_response = json.loads(response)
+        return parsed_response
 
     raise Exception("Faield to get response from gemini.")
