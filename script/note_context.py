@@ -1,7 +1,11 @@
+import json
 from dataclasses import dataclass, field
 
 from script.check_read_existing_notes import get_exiting_notes
 from script.claude_chat_scraper import scrape_claude_chat
+from script.gemini_interface.get_file_paths_to_modify_from_gemini import (
+    get_files_to_modify_from_gemini,
+)
 from script.get_vault_files_data import get_vault_files_info
 
 
@@ -25,6 +29,11 @@ class NoteContext:
     # the max message length in the metadata of already created notes.
     max_cutoff_message_length: int = 0
 
+    ###
+    # files that needs to be updated or created for the chat messages
+    files_to_modify: dict[str, list[str]] = {}
+
+    #method which calls the scraper and sets the initial attributes of the class.
     async def set_chat_context(self):
         messages = await scrape_claude_chat(self.chat_url)
 
@@ -35,10 +44,12 @@ class NoteContext:
         self.total_message_length = len(messages)
         self.chat_id = self.chat_url.split("/").pop()
 
+    #method which extracts all file paths and first 15 lines inside them to store in vault_files_info
     async def set_vault_files_info(self):
         files_data = await get_vault_files_info()
         self.vault_files_info = files_data
 
+    #method which checks if this chat has made notes in the vault and sets the update attributes if it has. 
     async def check_and_set_update_attributes(self):
         result = await get_exiting_notes(self.chat_id)
 
@@ -46,10 +57,27 @@ class NoteContext:
             # no files found to update.
             return
 
-        if result.get("max_message_length",0) > self.total_message_length:
-            raise Exception("The cutoff range can't be greater than total message. Maybe the scraping is partial.")
+        if result.get("max_message_length", 0) > self.total_message_length:
+            raise Exception(
+                "The cutoff range can't be greater than total message. Maybe the scraping is partial."
+            )
 
         # set update attributes
         self.update_flag = True
         self.max_cutoff_message_length = result.get("max_message_length", 0)
         self.existing_notes_of_chat = result.get("files", "")
+
+    #router that calls gemini to get the files to update and create for this part of chat messages.
+    async def set_files_to_modify(self):
+        messages = (
+            self.chat_messages[self.max_cutoff_message_length - 1 :]
+            if self.update_flag
+            else self.chat_messages
+        )
+        print(messages)
+        messages_string = json.dumps(messages)
+        response = await get_files_to_modify_from_gemini(
+            vault_files_info=self.vault_files_info, messages=messages_string
+        )
+
+        self.files_to_modify = response

@@ -57,10 +57,10 @@ async def scrape_claude_chat(url: str):
 
                 testid = await node.get_attribute("data-testid")
                 if testid == "user-message":
-                    role = "user"
+                    role = "Developer"
 
                 else:
-                    role = "assistant"
+                    role = "AI Tutor"
 
                 content = (await node.inner_text()).strip()
                 messages.append({"role": role, "content": content})
