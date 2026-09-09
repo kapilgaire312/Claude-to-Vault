@@ -1,3 +1,14 @@
+# macOS
+.DS_Store
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Private cloud files
+Vault/
+
 # Python-generated files
 __pycache__/
 *.py[oc]
@@ -7,4 +18,4 @@ wheels/
 *.egg-info
 
 # Virtual environments
-.venv
+.venv/
