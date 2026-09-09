@@ -31,6 +31,7 @@ async def get_files_to_modify_from_gemini(
         if response.startswith(("```json", "```")):
             response = remove_json_markdown(response)
         parsed_response = json.loads(response)
+        print(parsed_response)
         return parsed_response
 
     raise Exception("Faield to get response from gemini.")
