@@ -16,8 +16,8 @@ async def call_gemini(
 ):
     generation_config = {
         "response_mime_type": "application/json",
-        "temperature": 0.3,
-        "response_schema": response_schema,
+        "temperature": 0.2,
+        "response_schema": response_schema.model_json_schema(),
     }
     interaction: Interaction = await client.aio.interactions.create(
         model="gemini-3.5-flash",

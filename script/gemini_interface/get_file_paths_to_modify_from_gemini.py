@@ -7,6 +7,7 @@ from script.gemini_interface.system_instructions import (
     system_instructions_for_file_paths,
 )
 from script.gemini_interface.user_prompt import get_user_prompt_for_file_paths
+from script.gemini_interface.utils import remove_json_markdown
 
 
 class FilePathResponse(BaseModel):
@@ -27,7 +28,18 @@ async def get_files_to_modify_from_gemini(
     )
 
     if response:
-        parsed_response = json.loads(response)
-        return parsed_response
+        try:
+            parsed_response = json.loads(response)
+            return parsed_response
+
+        except json.JSONDecodeError as e:
+            # response is not valid json
+            # migh contain ```json, remove and retry.
+            print("error occured on first parse, retrying..", e.msg)
+            sanitized_res: str = remove_json_markdown(response)
+
+            # now parse it, if throw errror, let it propagate.
+            parsed_res = json.loads(sanitized_res)
+            return parsed_res
 
     raise Exception("Faield to get response from gemini.")
