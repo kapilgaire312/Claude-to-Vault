@@ -1,11 +1,19 @@
 import asyncio
+import os
 from pathlib import Path
 
 import aiofiles
+from dotenv import load_dotenv
+
+load_dotenv()
+VAULT_FOLDER = os.getenv("VAULT_FOLDER")
 
 
 async def _update_create_file(file_content: dict[str, str]):
-    vault_folder = Path("./Vault")
+    if not VAULT_FOLDER:
+        raise Exception("Vault Folder not set in .env")
+
+    vault_folder = Path(VAULT_FOLDER)
     file_path = file_content.get("file_path")
     content = file_content.get("note")
 

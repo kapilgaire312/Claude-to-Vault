@@ -1,13 +1,21 @@
 import asyncio
+import os
 from pathlib import Path
 
 import aiofiles
+from dotenv import load_dotenv
 
-root_folder_path = Path("./Vault/")
+load_dotenv()
+
+VAULT_FOLDER = os.getenv("VAULT_FOLDER")
+if not VAULT_FOLDER:
+    raise Exception("Vault Folder not set in .env")
+
+
+root_folder_path = Path(VAULT_FOLDER)
 
 
 async def get_file_path_and_lines(file_path: Path, lines_to_read):
-    print(type(file_path))
     async with aiofiles.open(file=file_path, mode="r") as f:
         lines = []
         for _ in range(lines_to_read):
