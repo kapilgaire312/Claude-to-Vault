@@ -13,6 +13,7 @@ from script.gemini_interface.utils import remove_json_markdown
 class FilePathResponse(BaseModel):
     existing_files_to_update: list[str]
     new_files_to_create: list[str]
+    existing_files_to_link_only: list[str]
 
 
 async def get_files_to_modify_from_gemini(
