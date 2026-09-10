@@ -16,6 +16,8 @@ from script.update_and_create_files_with_contents import (
 @dataclass()
 class NoteContext:
     chat_url: str
+
+    # message context
     chat_id: str | None = None
     chat_messages: list[dict[str, str]] = field(default_factory=lambda: [])
     total_message_length: int = 0
@@ -29,6 +31,7 @@ class NoteContext:
     # flags for update
     update_flag: bool = False
     # concatenate all the notes having the same chat_id
+    # TODO: this is unused till now, decide to use or remove it based on gemini performance.
     existing_notes_of_chat: str = ""
     # the max message length in the metadata of already created notes.
     max_cutoff_message_length: int = 0
@@ -37,21 +40,22 @@ class NoteContext:
     # files that needs to be updated or created for the chat messages
     files_to_modify: dict[str, list[str]] = field(default_factory=lambda: {})
 
-    # method which calls the scraper and sets the initial attributes of the class.
-    async def set_chat_context(self):
-        messages = await scrape_claude_chat(self.chat_url)
+    # #####
+    # #####
+    # #####
+    # MEthods
+    # Call these in the order they are defined.
+    # #####
 
+    # method which calls the scraper and sets the initial attributes of the class.
+    async def scrape_and_set_message_context(self):
+        messages = await scrape_claude_chat(self.chat_url)
         if not messages:
             raise Exception("No chat retrieved from the scraper.")
 
         self.chat_messages = messages
         self.total_message_length = len(messages)
         self.chat_id = self.chat_url.split("/").pop()
-
-    # method which extracts all file paths and first 15 lines inside them to store in vault_files_info
-    async def set_vault_files_info(self):
-        files_data = await get_vault_files_info()
-        self.vault_files_info = files_data
 
     # method which checks if this chat has made notes in the vault and sets the update attributes if it has.
     async def check_and_set_update_attributes(self):
@@ -60,6 +64,11 @@ class NoteContext:
         if result.get("max_message_length") is None:
             # no files found to update.
             return
+
+        if result.get("max_message_length", 0) == self.total_message_length:
+            # chat is has up to date notes.
+            print(result.get("max_message_length"), self.total_message_length)
+            raise Exception("The notes from the chat is already up_to_date.")
 
         if result.get("max_message_length", 0) > self.total_message_length:
             print(result.get("max_message_length"), self.total_message_length)
@@ -71,6 +80,11 @@ class NoteContext:
         self.update_flag = True
         self.max_cutoff_message_length = result.get("max_message_length", 0)
         self.existing_notes_of_chat = result.get("files", "")
+
+    # method which extracts all file paths and first 20 lines inside them to store in vault_files_info
+    async def set_vault_files_info(self):
+        files_data = await get_vault_files_info(lines_to_read=20)
+        self.vault_files_info = files_data
 
     # router that calls gemini to get the files to update and create for this part of chat messages.
     async def set_files_to_modify(self):
