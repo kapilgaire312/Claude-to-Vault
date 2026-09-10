@@ -20,7 +20,7 @@ async def call_gemini(
         "response_schema": response_schema.model_json_schema(),
     }
     interaction: Interaction = await client.aio.interactions.create(
-        model="gemini-3.5-flash",
+        model="gemini-3.6-flash",
         input=prompt,
         system_instruction=system_prompt,
         generation_config=generation_config,

@@ -27,6 +27,9 @@ You must output strictly valid JSON matching this exact structure, with no addit
     "string (newly invented kebab-case path following the 3-bucket rule)"
   ]
 }
+
+Consolidate closely related sub-methods and syntax into a single cohesive concept note 
+(e.g., group LINQ filtering and projection operators under a single 'csharp/linq-query-operators.md' file rather than creating separate files for each method).
 """
 
 system_instructions_for_new_note = """

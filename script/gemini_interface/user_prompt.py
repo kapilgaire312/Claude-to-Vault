@@ -39,7 +39,7 @@ Make sure to reflect the Developer's inquiries, compare the alternative options 
 
 
 def get_user_prompt_for_note_update(
-    vault_files_to_be_modified, current_file_path, chat_messages
+    vault_files_to_be_modified, current_file_path, chat_messages, existing_note_content
 ):
     return f"""
 --- THE MASTER PLAN (Vault Map for Cross-Linking) ---
@@ -49,7 +49,10 @@ def get_user_prompt_for_note_update(
 Target File Path: {current_file_path}
 
 --- EXISTING NOTE CONTENT ---
-   {chat_messages}
+   {existing_note_content}
+
+--- NEW KNOWLEDGE (The Delta Dialogue) ---
+  {chat_messages}
 
 --- INSTRUCTIONS ---
 Surgically integrate the New Knowledge into the Existing Note Content for '{current_file_path}'.

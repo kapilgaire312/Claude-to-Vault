@@ -22,7 +22,8 @@ async def get_md_note(
     note_update: bool,
     vault_files_to_be_modified: str,
     current_file_path: str,
-    chat_messsages: str,
+    chat_messages: str,
+    existing_note_content: str = "",
 ):
     system_instructions = (
         system_instructions_for_note_update
@@ -32,11 +33,14 @@ async def get_md_note(
 
     user_prompt = (
         get_user_prompt_for_note_update(
-            vault_files_to_be_modified, current_file_path, chat_messsages
+            vault_files_to_be_modified,
+            current_file_path,
+            chat_messages,
+            existing_note_content,
         )
         if note_update
         else get_user_prompt_for_new_note(
-            vault_files_to_be_modified, current_file_path, chat_messsages
+            vault_files_to_be_modified, current_file_path, chat_messages
         )
     )
 
@@ -48,8 +52,4 @@ async def get_md_note(
     print(response)
 
     if response:
-        if response.startswith(("```json", "```")):
-            response = remove_json_markdown(response)
-        parsed_response = json.loads(response)
-        print(parsed_response)
-        return parsed_response
+        return response
