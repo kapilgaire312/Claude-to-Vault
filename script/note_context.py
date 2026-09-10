@@ -6,6 +6,7 @@ from script.claude_chat_scraper import scrape_claude_chat
 from script.gemini_interface.get_file_paths_to_modify_from_gemini import (
     get_files_to_modify_from_gemini,
 )
+from script.get_content_for_files_to_modify import get_content_for_files_to_modify
 from script.get_vault_files_data import get_vault_files_info
 
 
@@ -31,9 +32,9 @@ class NoteContext:
 
     ###
     # files that needs to be updated or created for the chat messages
-    files_to_modify: dict[str, list[str]] = {}
+    files_to_modify: dict[str, list[str]] = field(default_factory=lambda: {})
 
-    #method which calls the scraper and sets the initial attributes of the class.
+    # method which calls the scraper and sets the initial attributes of the class.
     async def set_chat_context(self):
         messages = await scrape_claude_chat(self.chat_url)
 
@@ -44,12 +45,12 @@ class NoteContext:
         self.total_message_length = len(messages)
         self.chat_id = self.chat_url.split("/").pop()
 
-    #method which extracts all file paths and first 15 lines inside them to store in vault_files_info
+    # method which extracts all file paths and first 15 lines inside them to store in vault_files_info
     async def set_vault_files_info(self):
         files_data = await get_vault_files_info()
         self.vault_files_info = files_data
 
-    #method which checks if this chat has made notes in the vault and sets the update attributes if it has. 
+    # method which checks if this chat has made notes in the vault and sets the update attributes if it has.
     async def check_and_set_update_attributes(self):
         result = await get_exiting_notes(self.chat_id)
 
@@ -67,7 +68,7 @@ class NoteContext:
         self.max_cutoff_message_length = result.get("max_message_length", 0)
         self.existing_notes_of_chat = result.get("files", "")
 
-    #router that calls gemini to get the files to update and create for this part of chat messages.
+    # router that calls gemini to get the files to update and create for this part of chat messages.
     async def set_files_to_modify(self):
         messages = (
             self.chat_messages[self.max_cutoff_message_length - 1 :]
@@ -81,3 +82,31 @@ class NoteContext:
         )
 
         self.files_to_modify = response
+        # TODO check validity of file paths and create absolute path by merging with VAULT_PATH for update.
+
+    async def create_notes(self):
+        # loop through the files_to_modify and call gemini for each path to update the note.
+        print("creating notes...")
+        messages = (
+            self.chat_messages[self.max_cutoff_message_length - 1 :]
+            if self.update_flag
+            else self.chat_messages
+        )
+        # convert messages to string
+        messages_string = json.dumps(messages)
+        # construct meta_data
+        meta_data = {
+            "chat_id": self.chat_id,
+            "chat_url": self.chat_url,
+            "message_length": self.total_message_length,
+        }
+        file_path_and_note: list[
+            dict[str, str]
+        ] = await get_content_for_files_to_modify(
+            is_update=self.update_flag,
+            file_paths=self.files_to_modify,
+            chat_messages=messages_string,
+            meta_data=meta_data,
+        )
+
+        # Update/create files

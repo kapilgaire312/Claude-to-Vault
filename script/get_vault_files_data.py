@@ -17,7 +17,7 @@ async def get_file_path_and_lines(file_path):
                 break
             lines.append(line)
 
-    return f" {str(file_path)} =>  {''.join(lines)}"
+    return f" {str(file_path)} =>  \n{''.join(lines)}"
 
 
 async def get_vault_files_info():
@@ -34,4 +34,4 @@ async def get_vault_files_info():
 
     results = await asyncio.gather(*tasks)
 
-    return "\n".join(results)
+    return "\n\n".join(results)
