@@ -10,17 +10,21 @@ load_dotenv()
 
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
+GEMINI_MODEL = "gemini-3.5-flash"
+
 
 async def call_gemini(
-    prompt: str, system_prompt: str, response_schema: type[BaseModel]
+    prompt: str, system_prompt: str, response_schema: type[BaseModel] | None = None
 ):
     generation_config = {
-        "response_mime_type": "application/json",
+        "response_mime_type": ("application/json" if response_schema else "text/plain"),
         "temperature": 0.2,
-        "response_schema": response_schema.model_json_schema(),
     }
+
+    if response_schema:
+        generation_config["response_schema"] = response_schema.model_json_schema()
     interaction: Interaction = await client.aio.interactions.create(
-        model="gemini-3.5-flash",
+        model=GEMINI_MODEL,
         input=prompt,
         system_instruction=system_prompt,
         generation_config=generation_config,

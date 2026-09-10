@@ -11,11 +11,6 @@ from script.gemini_interface.user_prompt import (
     get_user_prompt_for_new_note,
     get_user_prompt_for_note_update,
 )
-from script.gemini_interface.utils import remove_json_markdown
-
-
-class NoteResponse(BaseModel):
-    markdown: str
 
 
 async def get_md_note(
@@ -47,9 +42,10 @@ async def get_md_note(
     response = await call_gemini(
         prompt=user_prompt,
         system_prompt=system_instructions,
-        response_schema=NoteResponse,
     )
     print(response)
 
-    if response:
-        return response
+    if not response:
+        raise Exception("Failed to get Markdown note from Gemini.")
+
+    return response.strip()
