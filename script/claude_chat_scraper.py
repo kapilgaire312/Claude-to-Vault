@@ -48,17 +48,29 @@ async def scrape_claude_chat(url: str) -> list[dict[str, str]]:
                 '[data-testid="user-message"], [data-perf-reply-text]'
             )
 
-            print("Total messages:", await nodes.count())
-            print(
-                "user messages count:",
-                await transcript.locator('[data-testid="user-message"]').count(),
-            )
-            # TODO:sometimes the claude messages are not detected and are 0.
-            print(
-                "claude messages count:",
-                await transcript.locator("[data-perf-reply-text]").count(),
-            )
+            total_message_count = await nodes.count()
 
+            user_message_count = await transcript.locator(
+                '[data-testid="user-message"]'
+            ).count()
+            claude_message_count = await transcript.locator(
+                "[data-perf-reply-text]"
+            ).count()
+
+            print("Total messages:", total_message_count)
+            print("user messages count:", user_message_count)
+            print("claude messages count:", claude_message_count)
+
+            if total_message_count == 0:
+                raise Exception("No messages scarped from the chat.")
+
+            if user_message_count == 0:
+                raise Exception("User mesage count is 0. Failed to read user messages.")
+
+            if claude_message_count == 0:
+                raise Exception(
+                    "Claude message count is 0. Failed to read claude messages."
+                )
             # construct the chat
             messages = []
             for i in range(await nodes.count()):
