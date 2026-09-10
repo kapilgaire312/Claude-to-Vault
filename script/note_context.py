@@ -55,7 +55,6 @@ class NoteContext:
 
         self.chat_messages = messages
         self.total_message_length = len(messages)
-        print(messages)
         self.chat_id = self.chat_url.split("/").pop()
 
     # method which checks if this chat has made notes in the vault and sets the update attributes if it has.
@@ -94,7 +93,6 @@ class NoteContext:
             if self.update_flag
             else self.chat_messages
         )
-        print(messages)
         messages_string = json.dumps(messages)
         response = await get_files_to_modify_from_gemini(
             vault_files_info=self.vault_files_info, messages=messages_string

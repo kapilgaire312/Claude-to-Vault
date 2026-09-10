@@ -6,7 +6,7 @@ import aiofiles
 from script.gemini_interface.get_markdown_note import get_md_note
 from script.utils import add_metadata_to_md, split_main_content_and_manual_notes
 
-MANUAL_NOTES_DELIMITER = "#Manual Notes"
+MANUAL_NOTES_DELIMITER = "# Manual Notes"
 
 
 async def _get_file_to_update(
@@ -37,7 +37,9 @@ async def _get_file_to_update(
 
     # get the markdown response and append back manual_notes
     # add the title of manual notes
+    response += "\n\n"
     response += MANUAL_NOTES_DELIMITER
+
     # add back previous notes
     response += manual_notes
 
@@ -64,6 +66,8 @@ async def _get_file_to_create(
         raise Exception("Response is none.")
 
     # add manual notes title at last
+
+    response += "\n\n"
     response += MANUAL_NOTES_DELIMITER
     md_with_metadata = add_metadata_to_md(response, metadata=meta_data)
     return {"file_path": file_path, "note": md_with_metadata}
