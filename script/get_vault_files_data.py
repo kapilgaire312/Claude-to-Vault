@@ -34,3 +34,12 @@ async def get_vault_files_info(lines_to_read):
     results = await asyncio.gather(*tasks)
 
     return "\n\n".join(results)
+
+
+async def main():
+    res = await get_vault_files_info(20)
+    print(res)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
