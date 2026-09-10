@@ -49,12 +49,13 @@ class NoteContext:
 
     # method which calls the scraper and sets the initial attributes of the class.
     async def scrape_and_set_message_context(self):
-        messages = await scrape_claude_chat(self.chat_url)
+        messages: list[dict[str, str]] = await scrape_claude_chat(self.chat_url)
         if not messages:
             raise Exception("No chat retrieved from the scraper.")
 
         self.chat_messages = messages
         self.total_message_length = len(messages)
+        print(messages)
         self.chat_id = self.chat_url.split("/").pop()
 
     # method which checks if this chat has made notes in the vault and sets the update attributes if it has.

@@ -3,7 +3,7 @@ import asyncio
 from playwright.async_api import TimeoutError, async_playwright
 
 
-async def scrape_claude_chat(url: str):
+async def scrape_claude_chat(url: str) -> list[dict[str, str]]:
     async with async_playwright() as playwright:
         browser = await playwright.chromium.launch(
             headless=False,
@@ -49,6 +49,15 @@ async def scrape_claude_chat(url: str):
             )
 
             print("Total messages:", await nodes.count())
+            print(
+                "user messages count:",
+                await transcript.locator('[data-testid="user-message"]').count(),
+            )
+            # TODO:sometimes the claude messages are not detected and are 0.
+            print(
+                "claude messages count:",
+                await transcript.locator("[data-perf-reply-text]").count(),
+            )
 
             # construct the chat
             messages = []
