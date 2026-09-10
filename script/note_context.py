@@ -8,6 +8,9 @@ from script.gemini_interface.get_file_paths_to_modify_from_gemini import (
 )
 from script.get_content_for_files_to_modify import get_content_for_files_to_modify
 from script.get_vault_files_data import get_vault_files_info
+from script.update_and_create_files_with_contents import (
+    update_and_create_files_with_content,
+)
 
 
 @dataclass()
@@ -59,6 +62,7 @@ class NoteContext:
             return
 
         if result.get("max_message_length", 0) > self.total_message_length:
+            print(result.get("max_message_length"), self.total_message_length)
             raise Exception(
                 "The cutoff range can't be greater than total message. Maybe the scraping is partial."
             )
@@ -109,4 +113,11 @@ class NoteContext:
             meta_data=meta_data,
         )
 
+        # TODO: add a safetynet here to save all the content of file_path_and_note to a file
+        # in case the below operation fails, which will make the above expnsive gemini call go waste.
+        # the user can check what went wrong and manually add the md file to the notes.
+
         # Update/create files
+        await update_and_create_files_with_content(file_path_and_note)
+        # TODO if this throws exception, catch it and retry
+        # else implement all or nothing model, if even a single file update/creat fails rollback.

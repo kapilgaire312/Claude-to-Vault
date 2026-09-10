@@ -9,7 +9,7 @@ from script.utils import add_metadata_to_md, split_main_content_and_manual_notes
 MANUAL_NOTES_DELIMITER = "#Manual Notes"
 
 
-async def update_file_to_update(
+async def _get_file_to_update(
     file_path,
     is_update,
     vault_file_paths_str,
@@ -46,7 +46,7 @@ async def update_file_to_update(
     return {"file_path": file_path, "note": md_with_metadata}
 
 
-async def update_file_to_create(
+async def _get_file_to_create(
     file_path,
     is_update,
     vault_file_paths_str,
@@ -90,7 +90,7 @@ async def get_content_for_files_to_modify(
     if files_to_update:
         update_note_tasks.extend(
             [
-                update_file_to_update(
+                _get_file_to_update(
                     file_path,
                     is_update=is_update,
                     vault_file_paths_str=vault_file_paths_str,
@@ -104,7 +104,7 @@ async def get_content_for_files_to_modify(
     files_to_create = file_paths.get("new_files_to_create")
     if files_to_create:
         create_new_note_tasks.extend(
-            update_file_to_create(
+            _get_file_to_create(
                 file_path,
                 is_update=is_update,
                 vault_file_paths_str=vault_file_paths_str,
@@ -116,6 +116,8 @@ async def get_content_for_files_to_modify(
     if not update_note_tasks and not create_new_note_tasks:
         raise Exception("No notes needs to be created/updated.")
 
+    # TODO: add optimizations here for the free teir of gemini, maybe call gemini one at a time with delay inbetween instead of gathering.
+    # impelemt all or nothing strategy here, if a single gemini call fails, retry it or abort all.
     notes_response = await asyncio.gather(*create_new_note_tasks, *update_note_tasks)
     print(notes_response[0].get("note")[:100])
     return notes_response
