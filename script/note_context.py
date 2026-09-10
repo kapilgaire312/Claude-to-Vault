@@ -1,14 +1,12 @@
 import json
 from dataclasses import dataclass, field
 
-from script.check_read_existing_notes import get_exiting_notes
-from script.claude_chat_scraper import scrape_claude_chat
-from script.gemini_interface.get_file_paths_to_modify_from_gemini import (
-    get_files_to_modify_from_gemini,
-)
-from script.get_content_for_files_to_modify import get_content_for_files_to_modify
-from script.get_vault_files_data import get_vault_files_info
-from script.update_and_create_files_with_contents import (
+from script.gemini_interface import get_files_to_modify_from_gemini
+from script.scraper import scrape_claude_chat
+from script.vault_handlers import (
+    get_content_for_files_to_modify,
+    get_exiting_notes,
+    get_vault_files_info,
     update_and_create_files_with_content,
 )
 

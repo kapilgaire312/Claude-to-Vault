@@ -3,8 +3,11 @@ import json
 
 import aiofiles
 
-from script.gemini_interface.get_markdown_note import get_md_note
-from script.utils import add_metadata_to_md, split_main_content_and_manual_notes
+from script.gemini_interface import get_md_note
+from script.vault_handlers.utils import (
+    add_metadata_to_md,
+    split_main_content_and_manual_notes,
+)
 
 MANUAL_NOTES_DELIMITER = "# Manual Notes"
 

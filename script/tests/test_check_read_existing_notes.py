@@ -1,6 +1,6 @@
 import pytest
 
-from script.check_read_existing_notes import get_exiting_notes
+from script.vault_handlers import get_exiting_notes
 
 
 @pytest.mark.asyncio
