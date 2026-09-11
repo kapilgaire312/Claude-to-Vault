@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from script.gemini_interface import get_files_to_modify_from_gemini
 from script.scraper import scrape_claude_chat
 from script.vault_handlers import (
+    check_and_get_valid_file_paths,
     get_content_for_files_to_modify,
     get_exiting_notes,
     get_vault_files_info,
@@ -96,8 +97,10 @@ class NoteContext:
             vault_files_info=self.vault_files_info, messages=messages_string
         )
 
-        self.files_to_modify = response
-        # TODO check validity of file paths and create absolute path by merging with VAULT_PATH for update.
+        validated_paths = check_and_get_valid_file_paths(response)
+        self.files_to_modify = validated_paths
+
+        # TODO: check validity of file paths and create absolute path by merging with VAULT_PATH for update.
 
     async def create_notes(self):
         # loop through the files_to_modify and call gemini for each path to update the note.
