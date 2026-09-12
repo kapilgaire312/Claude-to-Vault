@@ -1,20 +1,17 @@
 import asyncio
 import json
-import os
-from pathlib import Path
 
 import aiofiles
-from dotenv import load_dotenv
 
 from script.gemini_interface import get_md_note
 from script.vault_handlers.utils import (
     add_metadata_to_md,
+    get_vault_folder_path,
     split_main_content_and_manual_notes,
 )
 
-load_dotenv()
 MANUAL_NOTES_DELIMITER = "# Manual Notes"
-VAULT_FOLDER = os.getenv("VAULT_FOLDER")
+VAULT_FOLDER = get_vault_folder_path()
 
 
 async def _get_file_to_update(
@@ -24,10 +21,7 @@ async def _get_file_to_update(
     chat_messages,
     meta_data,
 ):
-    if not VAULT_FOLDER:
-        raise Exception("Vault Folder not set in .env")
-
-    full_file_path = Path(VAULT_FOLDER) / file_path
+    full_file_path = VAULT_FOLDER / file_path
     async with aiofiles.open(full_file_path) as file:
         contents = await file.read()
 

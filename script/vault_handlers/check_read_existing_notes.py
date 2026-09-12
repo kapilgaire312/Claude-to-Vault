@@ -1,13 +1,11 @@
 import asyncio
-import os
-from pathlib import Path
 
 import aiofiles
 import frontmatter
-from dotenv import load_dotenv
 
-load_dotenv()
-VAULT_FOLDER = os.getenv("VAULT_FOLDER")
+from script.vault_handlers.utils import get_vault_folder_path
+
+VAULT_FOLDER = get_vault_folder_path()
 
 
 async def get_exiting_note(file_path, chat_id, existing_files, message_length_list):
@@ -28,15 +26,12 @@ async def get_exiting_note(file_path, chat_id, existing_files, message_length_li
 
 
 async def get_exiting_notes(chat_id):
-    if not VAULT_FOLDER:
-        raise Exception("Vault Folder not set in .env")
-    root_folder = Path(VAULT_FOLDER)
     existing_files = []
     message_length_list = []
 
     tasks = [
         get_exiting_note(file_path, chat_id, existing_files, message_length_list)
-        for file_path in root_folder.rglob("*.md")
+        for file_path in VAULT_FOLDER.rglob("*.md")
     ]
 
     await asyncio.gather(*tasks)

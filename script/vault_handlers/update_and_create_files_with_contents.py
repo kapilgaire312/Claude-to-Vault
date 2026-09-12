@@ -1,19 +1,17 @@
 import asyncio
-import os
 from pathlib import Path
 
 import aiofiles
-from dotenv import load_dotenv
 
-load_dotenv()
-VAULT_FOLDER = os.getenv("VAULT_FOLDER")
+from script.vault_handlers.utils import get_vault_folder_path
+
+VAULT_FOLDER = get_vault_folder_path()
 
 
 async def _update_create_file(file_content: dict[str, str]):
     if not VAULT_FOLDER:
         raise Exception("Vault Folder not set in .env")
 
-    vault_folder = Path(VAULT_FOLDER)
     file_path = file_content.get("file_path")
     content = file_content.get("note")
 
@@ -21,7 +19,7 @@ async def _update_create_file(file_content: dict[str, str]):
         raise Exception("File path or content is none.", file_content)
 
     file_path = Path(file_path)
-    full_file_path = vault_folder / file_path
+    full_file_path = VAULT_FOLDER/ file_path
 
     # create new parent folders if required
     full_file_path.parent.mkdir(parents=True, exist_ok=True)

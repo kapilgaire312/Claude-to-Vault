@@ -1,10 +1,8 @@
-import os
 from pathlib import Path
 
-from dotenv import load_dotenv
+from script.vault_handlers.utils import get_vault_folder_path
 
-load_dotenv()
-VAULT_FOLDER = os.getenv("VAULT_FOLDER")
+VAULT_FOLDER = get_vault_folder_path()
 
 
 def check_and_get_valid_file_paths(files_paths_dict: dict[str, list[str]]):
@@ -16,21 +14,14 @@ def check_and_get_valid_file_paths(files_paths_dict: dict[str, list[str]]):
     valid_files_to_update: list[str] = []
     valid_files_to_link: list[str] = []
 
-    if not VAULT_FOLDER:
-        raise Exception("Vault folder is not set in .env!")
-    vault_path = Path(VAULT_FOLDER)
-
-    if not vault_path.is_dir():
-        raise Exception("VAULT_FOLDER path is not valid! Add a valid folder path.")
-
     if files_to_update:
         for file_path in files_to_update:
             relative_file_path = Path(file_path)
-            absolute_file_path = vault_path / relative_file_path
+            absolute_file_path = VAULT_FOLDER / relative_file_path
 
             # here not adding the absolute file path directly since this needs to be sent to the gemini generator.
             if not absolute_file_path.is_file():
-                #if the file to update is missing, add it to new_files_to_create list.
+                # if the file to update is missing, add it to new_files_to_create list.
                 missing_files_in_update.append(file_path)
 
             else:
@@ -39,7 +30,7 @@ def check_and_get_valid_file_paths(files_paths_dict: dict[str, list[str]]):
     if files_to_link:
         for file_path in files_to_link:
             relative_file_path = Path(file_path)
-            absolute_file_path = vault_path / relative_file_path
+            absolute_file_path = VAULT_FOLDER / relative_file_path
 
             if absolute_file_path.is_file():
                 valid_files_to_link.append(file_path)

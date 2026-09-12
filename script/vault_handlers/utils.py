@@ -1,4 +1,8 @@
+import os
+from pathlib import Path
+
 import frontmatter
+from dotenv import load_dotenv
 
 
 def split_main_content_and_manual_notes(contents: str, delimiter: str):
@@ -18,3 +22,18 @@ def add_metadata_to_md(md_file: str, metadata: dict[str, str | int]):
     post = frontmatter.loads(md_file)
     post.metadata.update(metadata)
     return frontmatter.dumps(post)
+
+
+def get_vault_folder_path() -> Path:
+    load_dotenv()
+    VAULT_FOLDER = os.getenv("VAULT_FOLDER")
+
+    if not VAULT_FOLDER:
+        raise Exception("Vault Folder not set in .env")
+
+    vault_folder_path = Path(VAULT_FOLDER)
+
+    if not vault_folder_path.is_dir():
+        raise Exception("VAULT_FOLDER path is not valid! Add a valid folder path.")
+
+    return vault_folder_path

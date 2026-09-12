@@ -1,18 +1,11 @@
 import asyncio
-import os
 from pathlib import Path
 
 import aiofiles
-from dotenv import load_dotenv
 
-load_dotenv()
+from script.vault_handlers.utils import get_vault_folder_path
 
-VAULT_FOLDER = os.getenv("VAULT_FOLDER")
-if not VAULT_FOLDER:
-    raise Exception("Vault Folder not set in .env")
-
-
-root_folder_path = Path(VAULT_FOLDER)
+VAULT_FOLDER = get_vault_folder_path()
 
 
 async def get_file_path_and_lines(file_path: Path, lines_to_read):
@@ -25,7 +18,7 @@ async def get_file_path_and_lines(file_path: Path, lines_to_read):
                 break
             lines.append(line)
 
-    file_path_to_send = file_path.relative_to(root_folder_path)
+    file_path_to_send = file_path.relative_to(VAULT_FOLDER)
     return f" {str(file_path_to_send)} =>  \n{''.join(lines)}"
 
 
@@ -37,7 +30,7 @@ async def get_vault_files_info(lines_to_read):
 
     tasks = [
         get_file_path_and_lines(file_path, lines_to_read)
-        for file_path in root_folder_path.rglob("*.md")
+        for file_path in VAULT_FOLDER.rglob("*.md")
     ]
 
     results = await asyncio.gather(*tasks)
