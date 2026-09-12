@@ -128,6 +128,12 @@ async def get_content_for_files_to_modify(
 
     # TODO: add optimizations here for the free teir of gemini, maybe call gemini one at a time with delay inbetween instead of gathering.
     # impelemt all or nothing strategy here, if a single gemini call fails, retry it or abort all.
-    notes_response = await asyncio.gather(*create_new_note_tasks, *update_note_tasks)
-    print(notes_response[0].get("note")[:100])
+    notes_response = await asyncio.gather(
+        *create_new_note_tasks, *update_note_tasks, return_exceptions=True
+    )
+
+    for note_response in notes_response:
+        if isinstance(note_response, Exception):
+            raise Exception("Got exception in note generation. Aborting all...", notes_response)
+
     return notes_response
