@@ -6,6 +6,7 @@ import aiofiles
 from script.gemini_interface import get_md_note
 from script.vault_handlers.utils import (
     add_metadata_to_md,
+    call_task_with_retry,
     get_vault_folder_path,
     split_main_content_and_manual_notes,
 )
@@ -126,14 +127,26 @@ async def get_content_for_files_to_modify(
     if not update_note_tasks and not create_new_note_tasks:
         raise Exception("No notes needs to be created/updated.")
 
-    # TODO: add optimizations here for the free teir of gemini, maybe call gemini one at a time with delay inbetween instead of gathering.
-    # impelemt all or nothing strategy here, if a single gemini call fails, retry it or abort all.
+    # calling gemini api one at a time with delay for free tier
+    notes_response = []
+    for task in [*create_new_note_tasks, *update_note_tasks]:
+        response: dict[str, str] = await call_task_with_retry(task, max_tries=3)
+        notes_response.append(response)
+
+    return notes_response
+
+
+"""
+   # calling all the gemini requests at the same time. use this if you have pro subscription.
     notes_response = await asyncio.gather(
         *create_new_note_tasks, *update_note_tasks, return_exceptions=True
     )
 
     for note_response in notes_response:
         if isinstance(note_response, Exception):
-            raise Exception("Got exception in note generation. Aborting all...", notes_response)
+            raise Exception(
+                "Got exception in note generation. Aborting all...", notes_response
+            )
 
     return notes_response
+"""
