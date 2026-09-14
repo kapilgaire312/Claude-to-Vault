@@ -50,17 +50,17 @@ async def call_task_with_retry(task: Coroutine, max_tries: int):
             return response
 
         except errors.APIError as e:
-            if e.code == 429:
-                print("429 Rate Limit Triggered!")
-                print(f"Error Message: {e.message}")
-                if i < max_tries - 1:
-                    print("Retrying...")
+            err_msg = (
+                "429 Rate Limit Triggered!" if e.code == 429 else "API error occured."
+            )
+            print(err_msg)
+            print(f"Error Message: {e.message}")
 
-                await asyncio.sleep(delay)
-                # using exponential delay to wait for limit to expire.
-                delay *= 2
+            if i < max_tries - 1:
+                print("Retrying...")
 
-            else:
-                raise e
+            await asyncio.sleep(delay)
+            # using exponential delay to wait for limit to expire.
+            delay *= 2
 
     raise Exception("Retries were exhausted. Rate Limit still occured.")
