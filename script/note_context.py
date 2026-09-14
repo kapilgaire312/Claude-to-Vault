@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 
 from script.gemini_interface import get_files_to_modify_from_gemini
 from script.scraper import scrape_claude_chat
+from script.utils import save_response_to_temp_file
 from script.vault_handlers import (
     check_and_get_valid_file_paths,
     get_content_for_files_to_modify,
@@ -125,9 +126,8 @@ class NoteContext:
             meta_data=meta_data,
         )
 
-        # TODO: add a safetynet here to save all the content of file_path_and_note to a file
-        # in case the below operation fails, which will make the above expnsive gemini call go waste.
-        # the user can check what went wrong and manually add the md file to the notes.
+        # save response to temp file in case updat/create fails
+        await save_response_to_temp_file(file_path_and_note)
 
         # Update/create files
         await update_and_create_files_with_content(file_path_and_note)

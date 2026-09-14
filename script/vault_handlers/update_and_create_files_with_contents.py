@@ -3,6 +3,7 @@ from pathlib import Path
 
 import aiofiles
 
+from script.utils import delete_response_temp_file
 from script.vault_handlers.utils import get_vault_folder_path
 
 VAULT_FOLDER = get_vault_folder_path()
@@ -75,10 +76,16 @@ async def update_and_create_files_with_content(file_content_list: list[dict[str,
         _delete_temp_files(temp_file_paths)
 
         # raise exception
-        raise Exception("Error occured when updating/creating files.", errors)
+        raise Exception(
+            "Error occured when updating/creating files. Check the response.json.tmp(if created) file for response backup.",
+            errors,
+        )
 
     # change the .tmp files to valid files by removing .tmp
     _rename_temp_to_note(temp_file_paths)
+
+    # delete the temp response
+    delete_response_temp_file()
     print("Notes added successfully!")
 
 
