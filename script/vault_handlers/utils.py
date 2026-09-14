@@ -57,7 +57,7 @@ async def call_task_with_retry(task: Coroutine, max_tries: int):
                     print("Retrying...")
 
                 await asyncio.sleep(delay)
-                #using exponential delay to wait for limit to expire.
+                # using exponential delay to wait for limit to expire.
                 delay *= 2
 
             else:

@@ -100,8 +100,6 @@ class NoteContext:
         validated_paths = check_and_get_valid_file_paths(response)
         self.files_to_modify = validated_paths
 
-        # TODO: check validity of file paths and create absolute path by merging with VAULT_PATH for update.
-
     async def create_notes(self):
         # loop through the files_to_modify and call gemini for each path to update the note.
         print("creating notes...")
@@ -133,5 +131,3 @@ class NoteContext:
 
         # Update/create files
         await update_and_create_files_with_content(file_path_and_note)
-        # TODO if this throws exception, catch it and retry
-        # else implement all or nothing model, if even a single file update/creat fails rollback.
