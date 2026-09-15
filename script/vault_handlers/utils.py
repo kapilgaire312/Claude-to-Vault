@@ -1,5 +1,6 @@
 import asyncio
 import os
+import re
 from pathlib import Path
 from typing import Coroutine
 
@@ -64,3 +65,19 @@ async def call_task_with_retry(task: Coroutine, max_tries: int):
             delay *= 2
 
     raise Exception("Retries were exhausted. Rate Limit still occured.")
+
+
+def is_file_path_structure_valid(file_path):
+    pattern = r"^(?:Languages/[^/]+/[^/]+|Frameworks/[^/]+/[^/]+|Concepts/[^/]+)\.md$"
+    # allowed structure patterns:
+    # Languages/<language>/<topic>.md
+    # Frameworks/<framework>/<topic>.md
+    # Concepts/<topic>.md
+    #
+    is_valid = re.match(pattern=pattern, string=file_path)
+
+    if is_valid is None:
+        return False
+
+    else:
+        return True
