@@ -1,4 +1,5 @@
 import json
+import logging
 from dataclasses import dataclass, field
 
 from script.gemini_interface import get_files_to_modify_from_gemini
@@ -11,6 +12,8 @@ from script.vault_handlers import (
     get_vault_files_info,
     update_and_create_files_with_content,
 )
+
+logger = logging.getLogger("__name__")
 
 
 @dataclass()
@@ -49,6 +52,7 @@ class NoteContext:
 
     # method which calls the scraper and sets the initial attributes of the class.
     async def scrape_and_set_message_context(self):
+        logger.info("#### 1. Scraping the chat... ####")
         messages: list[dict[str, str]] = await scrape_claude_chat(self.chat_url)
         if not messages:
             raise Exception("No chat retrieved from the scraper.")
@@ -59,19 +63,24 @@ class NoteContext:
 
     # method which checks if this chat has made notes in the vault and sets the update attributes if it has.
     async def check_and_set_update_attributes(self):
+        logger.info("#### 2. Checking existing notes for this chat... ####")
         result = await get_exiting_notes(self.chat_id)
 
         if result.get("max_message_length") is None:
             # no files found to update.
+            logger.info("No existing notes found.")
+
             return
+
+        logger.debug(
+            f"exisitng notes max length:{result.get('max_message_length')}\n chat total length:{self.total_message_length}"
+        )
 
         if result.get("max_message_length", 0) == self.total_message_length:
             # chat is has up to date notes.
-            print(result.get("max_message_length"), self.total_message_length)
             raise Exception("The notes from the chat is already up_to_date.")
 
         if result.get("max_message_length", 0) > self.total_message_length:
-            print(result.get("max_message_length"), self.total_message_length)
             raise Exception(
                 "The cutoff range can't be greater than total message. Maybe the scraping is partial."
             )
@@ -82,12 +91,15 @@ class NoteContext:
         self.existing_notes_of_chat = result.get("files", "")
 
     # method which extracts all file paths and first 20 lines inside them to store in vault_files_info
+    # TODO: use a cached file instead of reading all files on each run
     async def set_vault_files_info(self):
+        logger.info("#### 3. Getting vault files data... ####")
         files_data = await get_vault_files_info(lines_to_read=20)
         self.vault_files_info = files_data
 
     # router that calls gemini to get the files to update and create for this part of chat messages.
     async def set_files_to_modify(self):
+        logger.info("#### 4. Getting files list to update/create from gemini... ####")
         messages = (
             self.chat_messages[self.max_cutoff_message_length - 1 :]
             if self.update_flag
@@ -99,11 +111,12 @@ class NoteContext:
         )
 
         validated_paths = check_and_get_valid_file_paths(response)
+        logger.info("Total files to modify:\n%s", json.dumps(validated_paths, indent=2))
         self.files_to_modify = validated_paths
 
     async def create_notes(self):
         # loop through the files_to_modify and call gemini for each path to update the note.
-        print("creating notes...")
+        logger.info("#### 5. Getting content for each file to update/create from gemini... ####")
         messages = (
             self.chat_messages[self.max_cutoff_message_length - 1 :]
             if self.update_flag
@@ -125,9 +138,11 @@ class NoteContext:
             chat_messages=messages_string,
             meta_data=meta_data,
         )
-
+        logger.info("Got content for all files to modify.")
         # save response to temp file in case updat/create fails
         await save_response_to_temp_file(file_path_and_note)
+        
+        logger.info("Saved content response to temp file.")
 
         # Update/create files
         await update_and_create_files_with_content(file_path_and_note)

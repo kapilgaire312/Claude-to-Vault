@@ -1,7 +1,10 @@
 import asyncio
 import json
+import logging
 
 import aiofiles
+
+logger = logging.getLogger(__name__)
 
 from script.gemini_interface import get_md_note
 from script.vault_handlers.utils import (
@@ -22,6 +25,7 @@ async def _get_file_to_update(
     chat_messages,
     meta_data,
 ):
+    logger.info("Getting content for file to update: %s", file_path)
     full_file_path = VAULT_FOLDER / file_path
     async with aiofiles.open(full_file_path) as file:
         contents = await file.read()
@@ -37,7 +41,7 @@ async def _get_file_to_update(
         chat_messages=chat_messages,
         existing_note_content=main_content,
     )
-    print("got response")
+    logger.debug("Received note update response for %s", file_path)
 
     if not response:
         raise Exception("Response is none.")
@@ -62,6 +66,7 @@ async def _get_file_to_create(
     chat_messages,
     meta_data,
 ):
+    logger.info("Getting content for file to create: %s", file_path)
     response = await get_md_note(
         note_update=is_update,
         vault_files_to_be_modified=vault_file_paths_str,
@@ -96,7 +101,7 @@ async def get_content_for_files_to_modify(
 
     # get the file content of files to update
     files_to_update = file_paths.get("existing_files_to_update")
-    print("files to update are", files_to_update)
+    logger.debug("Files to update: %s", files_to_update)
 
     if files_to_update:
         update_note_tasks.extend(
@@ -113,6 +118,7 @@ async def get_content_for_files_to_modify(
         )
 
     files_to_create = file_paths.get("new_files_to_create")
+    logger.debug("Files to create: %s", files_to_create)
     if files_to_create:
         create_new_note_tasks.extend(
             _get_file_to_create(

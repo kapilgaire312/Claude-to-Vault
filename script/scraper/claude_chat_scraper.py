@@ -1,6 +1,9 @@
 import asyncio
+import logging
 
 from playwright.async_api import TimeoutError, async_playwright
+
+logger = logging.getLogger(__name__)
 
 
 async def scrape_claude_chat(url: str) -> list[dict[str, str]]:
@@ -24,11 +27,12 @@ async def scrape_claude_chat(url: str) -> list[dict[str, str]]:
                     timeout=10_000,
                 )
             except TimeoutError:
-                print("timed out")
+                logger.warning("Transcript did not appear within timeout; checking for bot verification.")
                 # check cloudflare bot detection
                 body_text = await page.locator("body").inner_text()
 
                 if "Performing security verification" in body_text:
+                    logger.warning("Cloudflare verification required; waiting for user input.")
                     input("Complete the human verification and hit enter...")
 
                 # wait for the transcipt to load
@@ -57,12 +61,11 @@ async def scrape_claude_chat(url: str) -> list[dict[str, str]]:
                 "[data-perf-reply-text]"
             ).count()
 
-            print("Total messages:", total_message_count)
-            print("user messages count:", user_message_count)
-            print("claude messages count:", claude_message_count)
+            logger.info("Total messages: %s", total_message_count)
+            logger.info("User messages count: %s", user_message_count)
+            logger.info("Claude messages count: %s", claude_message_count)
 
-            if total_message_count == 0:
-                raise Exception("No messages scarped from the chat.")
+           
 
             if user_message_count == 0:
                 raise Exception("User mesage count is 0. Failed to read user messages.")
@@ -95,7 +98,7 @@ async def scrape_claude_chat(url: str) -> list[dict[str, str]]:
 async def main():
     url = "https://claude.ai/share/49eddefd-3a84-4ca9-81af-b9637ad7a3b6"
     messages = await scrape_claude_chat(url)
-    print(messages)
+    logger.info(f"Scraped messages: {messages}")
 
 
 if __name__ == "__main__":

@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 from script.vault_handlers.utils import (
@@ -5,6 +6,7 @@ from script.vault_handlers.utils import (
     is_file_path_structure_valid,
 )
 
+logger = logging.getLogger(__name__)
 VAULT_FOLDER = get_vault_folder_path()
 
 
@@ -23,8 +25,7 @@ def check_and_get_valid_file_paths(files_paths_dict: dict[str, list[str]]):
             # check structure of file_path string
             is_valid = is_file_path_structure_valid(file_path)
             if not is_valid:
-                print("Invalid file path for update.", file_path)
-                print("skipping...")
+                logger.warning("Invalid file path for update. Skipping: %s", file_path)
                 continue
 
             relative_file_path = Path(file_path)
@@ -33,6 +34,10 @@ def check_and_get_valid_file_paths(files_paths_dict: dict[str, list[str]]):
             # here not adding the absolute file path directly since this needs to be sent to the gemini generator.
             if not absolute_file_path.is_file():
                 # if the file to update is missing, add it to new_files_to_create list.
+                logger.info(
+                    "File not found for update; creating new file instead: %s",
+                    file_path,
+                )
                 missing_files_in_update.append(file_path)
 
             else:
@@ -42,8 +47,7 @@ def check_and_get_valid_file_paths(files_paths_dict: dict[str, list[str]]):
         for file_path in files_to_link:
             is_valid = is_file_path_structure_valid(file_path)
             if not is_valid:
-                print("Invalid file path for link.", file_path)
-                print("skipping...")
+                logger.warning("Invalid file path for link. Skipping: %s", file_path)
                 continue
 
             relative_file_path = Path(file_path)
@@ -56,8 +60,7 @@ def check_and_get_valid_file_paths(files_paths_dict: dict[str, list[str]]):
         for file_path in files_to_create:
             is_valid = is_file_path_structure_valid(file_path)
             if not is_valid:
-                print("Invalid file path for create.", file_path)
-                print("skipping...")
+                logger.warning("Invalid file path for create. Skipping: %s", file_path)
                 continue
 
             valid_files_to_create.append(file_path)

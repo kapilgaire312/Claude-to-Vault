@@ -1,8 +1,11 @@
 import asyncio
+import logging
 import os
 import re
 from pathlib import Path
 from typing import Coroutine
+
+logger = logging.getLogger(__name__)
 
 import frontmatter
 from dotenv import load_dotenv
@@ -54,11 +57,11 @@ async def call_task_with_retry(task: Coroutine, max_tries: int):
             err_msg = (
                 "429 Rate Limit Triggered!" if e.code == 429 else "API error occured."
             )
-            print(err_msg)
-            print(f"Error Message: {e.message}")
+            logger.warning(err_msg)
+            logger.warning("Error Message: %s", e.message)
 
             if i < max_tries - 1:
-                print("Retrying...")
+                logger.info("Retrying after API error...")
 
             await asyncio.sleep(delay)
             # using exponential delay to wait for limit to expire.

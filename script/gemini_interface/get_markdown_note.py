@@ -1,6 +1,9 @@
 import json
+import logging
 
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
 
 from script.gemini_interface.call_gemini import call_gemini
 from script.gemini_interface.system_instructions import (
@@ -43,7 +46,7 @@ async def get_md_note(
         prompt=user_prompt,
         system_prompt=system_instructions,
     )
-    print(response)
+    logger.debug("Markdown note response for %s: %s", current_file_path, response)
 
     if not response:
         raise Exception("Failed to get Markdown note from Gemini.")

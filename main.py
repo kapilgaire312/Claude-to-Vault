@@ -4,6 +4,7 @@ import sys
 
 from dotenv import load_dotenv
 
+from script.config.logger import initialize_root_logger
 from script.note_context import NoteContext
 from script.vault_handlers.utils import get_vault_folder_path
 
@@ -15,6 +16,7 @@ load_dotenv()
 
 
 async def main(chat_url: str):
+    initialize_root_logger()
     # check if gemini api key is set.
     gemini_api_key = os.getenv("GEMINI_API_KEY")
     if not gemini_api_key:

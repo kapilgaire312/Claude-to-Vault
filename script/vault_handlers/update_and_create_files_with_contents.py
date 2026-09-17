@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from pathlib import Path
 
 import aiofiles
@@ -6,6 +7,7 @@ import aiofiles
 from script.utils import delete_response_temp_file
 from script.vault_handlers.utils import get_vault_folder_path
 
+logger = logging.getLogger(__name__)
 VAULT_FOLDER = get_vault_folder_path()
 
 # for testing
@@ -29,7 +31,7 @@ async def _update_create_file(file_content: dict[str, str]):
     full_file_path.parent.mkdir(parents=True, exist_ok=True)
 
     async with aiofiles.open(file=full_file_path, mode="w") as f:
-        print("working for path", full_file_path)
+        logger.info("Writing note content to temporary file: \n%s", full_file_path)
         await f.write(content)
         return full_file_path  # temp file paths
 
@@ -81,12 +83,14 @@ async def update_and_create_files_with_content(file_content_list: list[dict[str,
             errors,
         )
 
+    logger.info("Temporary files for all notes created successfully. Renaming to final note files...")
     # change the .tmp files to valid files by removing .tmp
     _rename_temp_to_note(temp_file_paths)
 
+    logger.info("Temporary files renamed to final note files successfully. Deleting temporary files...")
     # delete the temp response
     delete_response_temp_file()
-    print("Notes added successfully!")
+    logger.info("Notes added successfully.")
 
 
 # for testing

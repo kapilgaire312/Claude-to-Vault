@@ -1,6 +1,9 @@
 import json
+import logging
 
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
 
 from script.gemini_interface.call_gemini import call_gemini
 from script.gemini_interface.system_instructions import (
@@ -32,7 +35,7 @@ async def get_files_to_modify_from_gemini(
         if response.startswith(("```json", "```")):
             response = remove_json_markdown(response)
         parsed_response = json.loads(response)
-        print(parsed_response)
+        logger.debug("Parsed file path response: %s", parsed_response)
         return parsed_response
 
     raise Exception("Faield to get response from gemini.")

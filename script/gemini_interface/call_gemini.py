@@ -1,8 +1,11 @@
 import asyncio
+import logging
 import os
 
 from dotenv import load_dotenv
 from google import genai
+
+logger = logging.getLogger(__name__)
 from google.genai._gaos.types.interactions import Interaction
 from pydantic import BaseModel
 
@@ -30,7 +33,8 @@ async def call_gemini(
         generation_config=generation_config,
     )
 
-    print(interaction.output_text)
+    logger.info("Gemini response received.")
+    logger.debug("Gemini output text: %s", interaction.output_text)
     return interaction.output_text
 
 
