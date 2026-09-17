@@ -1,11 +1,6 @@
-import json
 import logging
 
-from pydantic import BaseModel
-
-logger = logging.getLogger(__name__)
-
-from script.gemini_interface.call_gemini import call_gemini
+from script.gemini_interface import call_gemini_with_retry
 from script.gemini_interface.system_instructions import (
     system_instructions_for_new_note,
     system_instructions_for_note_update,
@@ -14,6 +9,8 @@ from script.gemini_interface.user_prompt import (
     get_user_prompt_for_new_note,
     get_user_prompt_for_note_update,
 )
+
+logger = logging.getLogger(__name__)
 
 
 async def get_md_note(
@@ -42,8 +39,8 @@ async def get_md_note(
         )
     )
 
-    response = await call_gemini(
-        prompt=user_prompt,
+    response = await call_gemini_with_retry(
+        user_prompt=user_prompt,
         system_prompt=system_instructions,
     )
     logger.debug("Markdown note response for %s: %s", current_file_path, response)

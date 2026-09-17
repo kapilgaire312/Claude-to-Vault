@@ -4,16 +4,16 @@ import os
 
 from dotenv import load_dotenv
 from google import genai
-
-logger = logging.getLogger(__name__)
 from google.genai._gaos.types.interactions import Interaction
 from pydantic import BaseModel
 
 load_dotenv()
 
+logger = logging.getLogger(__name__)
+
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-GEMINI_MODEL = "gemini-3.5-flash"
+GEMINI_MODEL = "gemini-3.6-flash"
 
 
 async def call_gemini(

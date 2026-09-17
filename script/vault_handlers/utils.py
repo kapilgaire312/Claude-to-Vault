@@ -1,15 +1,12 @@
-import asyncio
 import logging
 import os
 import re
 from pathlib import Path
-from typing import Coroutine
-
-logger = logging.getLogger(__name__)
 
 import frontmatter
 from dotenv import load_dotenv
-from google.genai import errors
+
+logger = logging.getLogger(__name__)
 
 
 def split_main_content_and_manual_notes(contents: str, delimiter: str):
@@ -44,30 +41,6 @@ def get_vault_folder_path() -> Path:
         raise Exception("VAULT_FOLDER path is not valid! Add a valid folder path.")
 
     return vault_folder_path
-
-
-async def call_task_with_retry(task: Coroutine, max_tries: int):
-    delay = 10
-    for i in range(max_tries):
-        try:
-            response: dict[str, str] = await task
-            return response
-
-        except errors.APIError as e:
-            err_msg = (
-                "429 Rate Limit Triggered!" if e.code == 429 else "API error occured."
-            )
-            logger.warning(err_msg)
-            logger.warning("Error Message: %s", e.message)
-
-            if i < max_tries - 1:
-                logger.info("Retrying after API error...")
-
-            await asyncio.sleep(delay)
-            # using exponential delay to wait for limit to expire.
-            delay *= 2
-
-    raise Exception("Retries were exhausted. Rate Limit still occured.")
 
 
 def is_file_path_structure_valid(file_path):

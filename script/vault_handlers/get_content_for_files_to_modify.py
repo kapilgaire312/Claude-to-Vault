@@ -1,18 +1,16 @@
-import asyncio
 import json
 import logging
 
 import aiofiles
 
-logger = logging.getLogger(__name__)
-
 from script.gemini_interface import get_md_note
 from script.vault_handlers.utils import (
     add_metadata_to_md,
-    call_task_with_retry,
     get_vault_folder_path,
     split_main_content_and_manual_notes,
 )
+
+logger = logging.getLogger(__name__)
 
 MANUAL_NOTES_DELIMITER = "# Manual Notes"
 VAULT_FOLDER = get_vault_folder_path()
@@ -136,7 +134,7 @@ async def get_content_for_files_to_modify(
     # calling gemini api one at a time with delay for free tier
     notes_response = []
     for task in [*create_new_note_tasks, *update_note_tasks]:
-        response: dict[str, str] = await call_task_with_retry(task, max_tries=3)
+        response: dict[str, str] = await task
         notes_response.append(response)
 
     return notes_response

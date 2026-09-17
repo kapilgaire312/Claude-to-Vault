@@ -3,14 +3,14 @@ import logging
 
 from pydantic import BaseModel
 
-logger = logging.getLogger(__name__)
-
-from script.gemini_interface.call_gemini import call_gemini
+from script.gemini_interface import call_gemini_with_retry
 from script.gemini_interface.system_instructions import (
     system_instructions_for_file_paths,
 )
 from script.gemini_interface.user_prompt import get_user_prompt_for_file_paths
 from script.gemini_interface.utils import remove_json_markdown
+
+logger = logging.getLogger(__name__)
 
 
 class FilePathResponse(BaseModel):
@@ -25,8 +25,8 @@ async def get_files_to_modify_from_gemini(
     system_instructions = system_instructions_for_file_paths
     user_prompt = get_user_prompt_for_file_paths(vault_files_info, messages)
 
-    response = await call_gemini(
-        prompt=user_prompt,
+    response = await call_gemini_with_retry(
+        user_prompt=user_prompt,
         system_prompt=system_instructions,
         response_schema=FilePathResponse,
     )
