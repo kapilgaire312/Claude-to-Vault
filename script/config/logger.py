@@ -8,3 +8,6 @@ def initialize_root_logger():
     logging.getLogger("httpx").setLevel(logging.WARNING)
 
     logging.debug("Root logger initialized.")
+
+    logger = logging.getLogger()
+    return logger

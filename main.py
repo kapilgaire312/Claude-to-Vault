@@ -8,15 +8,17 @@ from script.config.logger import initialize_root_logger
 from script.note_context import NoteContext
 from script.vault_handlers.utils import get_vault_folder_path
 
-DEFAULT_CHAT_URL_FOR_TEST = (
-    "https://claude.ai/share/49eddefd-3a84-4ca9-81af-b9637ad7a3b6"
-)
-
 load_dotenv()
 
 
 async def main(chat_url: str):
-    initialize_root_logger()
+    logger = initialize_root_logger()
+
+    # check valdity of chat_url
+    if not chat_url or not chat_url.startswith("https://claude.ai/share/"):
+        logger.critical("Enter a valid claude chat share url.")
+        return
+
     # check if gemini api key is set.
     gemini_api_key = os.getenv("GEMINI_API_KEY")
     if not gemini_api_key:
@@ -25,13 +27,20 @@ async def main(chat_url: str):
     get_vault_folder_path()
 
     note_context = NoteContext(chat_url)
-    await note_context.scrape_and_set_message_context()
-    await note_context.check_and_set_update_attributes()
-    await note_context.set_vault_files_info()
-    await note_context.set_files_to_modify()
-    await note_context.create_notes()
+    try:
+        await note_context.scrape_and_set_message_context()
+        await note_context.check_and_set_update_attributes()
+        await note_context.set_vault_files_info()
+        await note_context.set_files_to_modify()
+        await note_context.create_notes()
+
+    except Exception as e:
+        logger.critical(str(e))
 
 
 if __name__ == "__main__":
-    chat_url = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_CHAT_URL_FOR_TEST
+    chat_url = ""
+    if len(sys.argv) > 1:
+        chat_url = sys.argv[1]
+
     asyncio.run(main(chat_url))
