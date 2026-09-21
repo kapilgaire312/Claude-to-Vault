@@ -74,6 +74,7 @@ Create a `.env` file in the project root:
 ```dotenv
 GEMINI_API_KEY=your_gemini_api_key
 VAULT_FOLDER=/absolute/path/to/your/markdown-vault
+GEMINI_MODEL=gemini-3.7-flash
 ```
 
 `GEMINI_API_KEY` is used for concept routing and note generation. `VAULT_FOLDER` must point to an existing directory. It may be this repository's `Vault/` directory or, more commonly, a separate vault managed by Obsidian.
