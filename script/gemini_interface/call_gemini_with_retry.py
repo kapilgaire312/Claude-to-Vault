@@ -27,23 +27,27 @@ async def call_gemini_with_retry(
 
             return response
 
-        except APIError as e:
-            err_msg = (
-                "429 Rate Limit Triggered!"
-                if e.status_code == 429
-                else "API error occured."
-            )
+        except (APIError, asyncio.TimeoutError) as e:
+            if isinstance(e, asyncio.TimeoutError):
+                err_msg = "Gemini request timed out."
+                error_message = str(e)
+            else:
+                err_msg = (
+                    "429 Rate Limit Triggered!"
+                    if e.status_code == 429
+                    else "API error occured."
+                )
+                error_message = e.message
+
             logger.warning(err_msg)
-            logger.warning("Error Message: %s", e.message)
+            logger.warning("Error Message: %s", error_message)
 
             if i < max_tries - 1:
-                logger.info("Retrying after API error...")
-
+                logger.info("Retrying after Gemini error...")
                 await asyncio.sleep(delay)
-            # using exponential delay to wait for limit to expire.
             delay *= 2
 
-    raise Exception("Retries were exhausted. API errors still occured.")
+    raise Exception("Retries were exhausted. Gemini requests still failed.")
 
 
 async def main():

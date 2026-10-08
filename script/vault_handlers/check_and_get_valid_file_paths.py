@@ -25,6 +25,9 @@ def check_and_get_valid_file_paths(files_paths_dict: dict[str, list[str]]):
             # check structure of file_path string
             is_valid = is_file_path_structure_valid(file_path)
             if not is_valid:
+                file_path += ".md"  # append .md if missing
+                is_valid = is_file_path_structure_valid(file_path)
+            if not is_valid:
                 logger.warning("Invalid file path for update. Skipping: %s", file_path)
                 continue
 
@@ -47,6 +50,9 @@ def check_and_get_valid_file_paths(files_paths_dict: dict[str, list[str]]):
         for file_path in files_to_link:
             is_valid = is_file_path_structure_valid(file_path)
             if not is_valid:
+                file_path += ".md"  # append .md if missing
+                is_valid = is_file_path_structure_valid(file_path)
+            if not is_valid:
                 logger.warning("Invalid file path for link. Skipping: %s", file_path)
                 continue
 
@@ -59,6 +65,9 @@ def check_and_get_valid_file_paths(files_paths_dict: dict[str, list[str]]):
     if files_to_create:
         for file_path in files_to_create:
             is_valid = is_file_path_structure_valid(file_path)
+            if not is_valid:
+                file_path += ".md"  # append .md if missing
+                is_valid = is_file_path_structure_valid(file_path)
             if not is_valid:
                 logger.warning("Invalid file path for create. Skipping: %s", file_path)
                 continue

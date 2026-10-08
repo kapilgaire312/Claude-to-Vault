@@ -26,11 +26,16 @@ async def call_gemini(
 
     if response_schema:
         generation_config["response_schema"] = response_schema.model_json_schema()
-    interaction: Interaction = await client.aio.interactions.create(
-        model=GEMINI_MODEL,
-        input=prompt,
-        system_instruction=system_prompt,
-        generation_config=generation_config,
+    timeout_seconds = float(os.getenv("GEMINI_REQUEST_TIMEOUT_SECONDS", "120"))
+    logger.info("Sending request to Gemini (timeout: %ss).", timeout_seconds)
+    interaction: Interaction = await asyncio.wait_for(
+        client.aio.interactions.create(
+            model=GEMINI_MODEL,
+            input=prompt,
+            system_instruction=system_prompt,
+            generation_config=generation_config,
+        ),
+        timeout=timeout_seconds,
     )
 
     logger.info("Gemini response received.")

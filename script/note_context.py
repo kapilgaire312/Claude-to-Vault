@@ -101,7 +101,7 @@ class NoteContext:
     async def set_files_to_modify(self):
         logger.info("#### 4. Getting files list to update/create from gemini... ####")
         messages = (
-            self.chat_messages[self.max_cutoff_message_length - 1 :]
+            self.chat_messages[self.max_cutoff_message_length - 2 :]
             if self.update_flag
             else self.chat_messages
         )
@@ -116,9 +116,11 @@ class NoteContext:
 
     async def create_notes(self):
         # loop through the files_to_modify and call gemini for each path to update the note.
-        logger.info("#### 5. Getting content for each file to update/create from gemini... ####")
+        logger.info(
+            "#### 5. Getting content for each file to update/create from gemini... ####"
+        )
         messages = (
-            self.chat_messages[self.max_cutoff_message_length - 1 :]
+            self.chat_messages[self.max_cutoff_message_length - 2 :]
             if self.update_flag
             else self.chat_messages
         )
@@ -141,7 +143,7 @@ class NoteContext:
         logger.info("Got content for all files to modify.")
         # save response to temp file in case updat/create fails
         await save_response_to_temp_file(file_path_and_note)
-        
+
         logger.info("Saved content response to temp file.")
 
         # Update/create files

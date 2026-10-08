@@ -27,12 +27,16 @@ async def scrape_claude_chat(url: str) -> list[dict[str, str]]:
                     timeout=10_000,
                 )
             except TimeoutError:
-                logger.warning("Transcript did not appear within timeout; checking for bot verification.")
+                logger.warning(
+                    "Transcript did not appear within timeout; checking for bot verification."
+                )
                 # check cloudflare bot detection
                 body_text = await page.locator("body").inner_text()
 
                 if "Performing security verification" in body_text:
-                    logger.warning("Cloudflare verification required; waiting for user input.")
+                    logger.warning(
+                        "Cloudflare verification required; waiting for user input."
+                    )
                     input("Complete the human verification and hit enter...")
 
                 # wait for the transcipt to load
@@ -49,7 +53,7 @@ async def scrape_claude_chat(url: str) -> list[dict[str, str]]:
         """
             # to get the chat in order, we can give both selectors to the locator, it will give the elements in the order they appear in DOM
             nodes = transcript.locator(
-                '[data-testid="user-message"], [data-perf-reply-text]'
+                '[data-testid="user-message"], [data-testid="assistant-message"]'
             )
 
             total_message_count = await nodes.count()
@@ -58,14 +62,12 @@ async def scrape_claude_chat(url: str) -> list[dict[str, str]]:
                 '[data-testid="user-message"]'
             ).count()
             claude_message_count = await transcript.locator(
-                "[data-perf-reply-text]"
+                '[data-testid="assistant-message"]'
             ).count()
 
             logger.info("Total messages: %s", total_message_count)
             logger.info("User messages count: %s", user_message_count)
             logger.info("Claude messages count: %s", claude_message_count)
-
-           
 
             if user_message_count == 0:
                 raise Exception("User mesage count is 0. Failed to read user messages.")

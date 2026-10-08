@@ -18,11 +18,15 @@ async def get_exiting_note(file_path, chat_id, existing_files, message_length_li
 
     try:
         note = frontmatter.loads(contents)
-        if note.get("chat_id") == chat_id:
-            file_path_to_send = file_path.relative_to(VAULT_FOLDER)
-            existing_file = f"file path:{file_path_to_send}\n Contents:\n{contents}"
-            existing_files.append(existing_file)
-            message_length_list.append(note["message_length"])
+        note_sources = note.get("sources", "")
+        for source in note_sources:
+            if source.get("chat_id") == chat_id:
+                file_path_to_send = file_path.relative_to(VAULT_FOLDER)
+                existing_file = f"file path:{file_path_to_send}\n Contents:\n{contents}"
+                existing_files.append(existing_file)
+                message_length_list.append(note["message_length"])
+                return  # Exit after finding the first matching source
+        logger.info("No matching source found for chat_id: %s in file: %s", chat_id, file_path)
     except Exception as e:
         logger.warning("Error occurred while reading existing note: %s \n skipping file: %s", e, file_path)
         #TODO: handle exception properly, maybe exit the program or log the error and continue. For now, just logging and continuing.
