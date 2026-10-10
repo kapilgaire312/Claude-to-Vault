@@ -15,7 +15,7 @@ async def call_gemini_with_retry(
     response_schema: type[BaseModel] | None = None,
 ):
     delay = 15
-    max_tries = 4
+    max_tries = 3
 
     for i in range(max_tries):
         try:

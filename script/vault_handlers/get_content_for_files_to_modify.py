@@ -53,11 +53,7 @@ async def _get_file_to_update(
     response += manual_notes
 
     # add metadata
-    md_with_metadata = add_metadata_to_md(
-        response,
-        metadata=meta_data,
-        existing_md_file=contents,
-    )
+    md_with_metadata = add_metadata_to_md(response, metadata=meta_data)
     return {"file_path": file_path, "note": md_with_metadata}
 
 
