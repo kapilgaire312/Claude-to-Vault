@@ -22,10 +22,16 @@ def split_main_content_and_manual_notes(contents: str, delimiter: str):
     return main_content, manual_notes
 
 
-def add_metadata_to_md(md_file: str, metadata: dict[str, str | int]):
+def add_metadata_to_md(
+    md_file: str,
+    metadata: dict[str, str | int],
+    existing_md_file: str | None = None,
+):
     post = frontmatter.loads(md_file)
-    #read the sources metadata and loop through it to check if the chat_id already exists, if it does then update the message_length, if not then append a new source with the chat_id and message_length
-    sources = post.get("sources", [])
+    existing_post = frontmatter.loads(existing_md_file) if existing_md_file else None
+    sources = list(
+        (existing_post or {}).get("sources", post.get("sources", []))
+    )
     chat_id = metadata.get("chat_id")
     message_length = metadata.get("message_length")
     if chat_id is not None and message_length is not None:

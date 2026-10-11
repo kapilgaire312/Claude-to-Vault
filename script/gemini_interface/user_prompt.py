@@ -58,6 +58,7 @@ Target File Path: {current_file_path}
 Surgically integrate the New Knowledge into the Existing Note Content for '{current_file_path}'.
 - Weave new explanations, code, and trade-offs into their respective sections.
 - Preserve all user inline annotations (==...== and <!--...-->).
+- Do not remove, replace, or rewrite the existing `sources` frontmatter metadata; it must be preserved and extended by the application.
 - Add new recall questions to the bottom of the list.
 - Return the complete, updated Markdown document.
   """
